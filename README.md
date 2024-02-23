@@ -1,4 +1,4 @@
-# R6 Blocked Player Monitor Discord Bot
+# R6 Blocked Player Monitor
 
 This Discord bot monitors blocked players on Rainbow Six Siege (R6). Whenever a player is blocked, it prints their status including their rank, KD (Kill/Death ratio), WL (Win/Loss ratio), and provides a link to their R6 Tracker profile.
 
