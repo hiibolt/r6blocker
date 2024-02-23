@@ -350,7 +350,7 @@ async def on_ready():
             msg = f"\n## Player:\n\tUplay: **{profile['uplay']}**\n\tNickname: **{profile['nickname']}**"
             msg += f"\n### Rank:\n\tCurrent: **{profile['mmr']}**\n\tPeak: **{profile['peak_mmr']}**)"
             msg += f"\n### Stats:\n\tKD: **{profile['kd']}**\n\tKills: **{profile['kills']}**\n\tDeaths: **{profile['deaths']}**\n\n\tWL: **{profile['wl']}**\n\tWins: **{profile['wins']}**\n\tLosses: **{profile['losses']}**"
-            msg += f"\n### R6 Tracker\n\tLink: https://r6.tracker.network/profile/pc/{profile['profile_id']}"
+            msg += f"\n### R6 Tracker\n\tLink: https://r6.tracker.network/r6/search?name={profile['profile_id']}&platform=4"
             
             embed=discord.Embed(title=f'Blocked Player (@wydbolt)', description=f'{msg}', color=0xFF5733)
             embed.set_thumbnail(url="https://github.com/hiibolt/hiibolt/assets/91273156/4a7c1e36-bf24-4f5a-a501-4dc9c92514c4")
