@@ -23,7 +23,7 @@ This Discord bot monitors blocked players on Rainbow Six Siege (R6). Whenever a 
 
 5. Run the bot:
    ```bash
-   python bot.py
+   python main.py
    ```
 
 ## Bot Functionality
