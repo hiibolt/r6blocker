@@ -1,0 +1,7 @@
+websockets==12.0
+aiohttp
+asyncio
+discord.py
+matplotlib
+numpy
+python-dotenv
