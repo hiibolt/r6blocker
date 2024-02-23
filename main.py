@@ -298,7 +298,9 @@ async def on_ready():
         debug = False
 
         while True:
-            profile = {}
+            profile = {
+                "linked": []
+            }
             raw_data = await websocket.recv()
             if debug:
                 print(f"Received!")
@@ -314,7 +316,8 @@ async def on_ready():
             player = await auth.get(f"https://public-ubiservices.ubi.com/v1/profiles/{profile['profile_id']}")
             persona = await auth.get(f"https://public-ubiservices.ubi.com/v1/profiles/persona?profileIds={profile['profile_id']}&spaceId=0d2ae42d-4c27-4cb7-af6c-2099062302bb")
             stats = await auth.get(f"https://public-ubiservices.ubi.com/v2/spaces/0d2ae42d-4c27-4cb7-af6c-2099062302bb/title/r6s/skill/full_profiles?profile_ids={profile['profile_id']}&platform_families=pc")
-            
+            profiles = await auth.get(f"https://public-ubiservices.ubi.com/v3/users/{profile['profile_id']}/profiles")
+   
             if debug:
                 print("Player:")
                 print(json.dumps(player, indent=3))
@@ -322,6 +325,26 @@ async def on_ready():
                 print(json.dumps(persona, indent=3))
                 print("Stats:")
                 print(json.dumps(stats, indent=3))
+                print("Profiles:")
+                print(json.dumps(profiles, indent=3))
+
+            for platform in profiles["profiles"]:
+                match platform['platformType']:
+                    case "uplay":
+                        profile['linked'].append(f"**Uplay**:\n\tLink: https://r6.tracker.network/r6/search?name={profile['profile_id']}&platform=4")
+                    case "steam":
+                        profile['linked'].append(f"**Steam**:\n\tLink: https://findsteamid.com/steamid/{platform['idOnPlatform']}")
+                    case "xbl":
+                        profile['linked'].append(f"**XBL**:\n\tLink: https://xboxgamertag.com/search/{platform['nameOnPlatform']}")
+                    case "twitch":
+                        profile['linked'].append(f"**Twitch**:\n\tLink: https://www.twitch.tv/{platform['nameOnPlatform']}")
+                    case _:
+                        # OCD
+                        upper_first = list(platform['platformType'])
+                        upper_first[0] = upper_first[0].upper()
+                        upper_first = ''.join(upper_first)
+
+                        profile['linked'].append(f"**{upper_first}**:\n\tName: **{platform['nameOnPlatform']}**\n\tID: **{platform['idOnPlatform']}**")
             
             profile['uplay'] = player['nameOnPlatform']
             profile['nickname'] = persona['personas'][0]['nickname'] if (persona['personas'] and persona['personas'][0]['obj']['Enabled']) else "Offline/No Nickname"
@@ -350,10 +373,12 @@ async def on_ready():
             msg = f"\n## Player:\n\tUplay: **{profile['uplay']}**\n\tNickname: **{profile['nickname']}**"
             msg += f"\n### Rank:\n\tCurrent: **{profile['mmr']}**\n\tPeak: **{profile['peak_mmr']}**)"
             msg += f"\n### Stats:\n\tKD: **{profile['kd']}**\n\tKills: **{profile['kills']}**\n\tDeaths: **{profile['deaths']}**\n\n\tWL: **{profile['wl']}**\n\tWins: **{profile['wins']}**\n\tLosses: **{profile['losses']}**"
-            msg += f"\n### R6 Tracker\n\tLink: https://r6.tracker.network/r6/search?name={profile['profile_id']}&platform=4"
-            
+           
+            profiles_str = '\n'.join(profile['linked'])
+            msg += f"\n### Linked Accounts:\n{profiles_str}"
+
             embed=discord.Embed(title=f'Blocked Player (@wydbolt)', description=f'{msg}', color=0xFF5733)
-            embed.set_thumbnail(url="https://github.com/hiibolt/hiibolt/assets/91273156/4a7c1e36-bf24-4f5a-a501-4dc9c92514c4")
+            embed.set_thumbnail(url=f"https://ubisoft-avatars.akamaized.net/{profile['profile_id']}/default_tall.png")
             
             await client.get_channel(int(os.environ["CHANNEL_ID"] or os.getenv("CHANNEL_ID"))).send(embed=embed)
 
