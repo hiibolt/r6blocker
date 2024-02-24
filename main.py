@@ -283,7 +283,16 @@ client = commands.Bot(command_prefix='.', intents=intents)
 async def on_ready():
     print(f"Connected at {time.time()}s!")
 
+    read_ws.start()
+
+
+
+@tasks.loop(minutes=105)
+async def read_ws():
     auth = Auth(os.environ["AUTH_EMAIL"] or os.getenv("AUTH_EMAIL"), os.environ["AUTH_PW"] or os.getenv("AUTH_PW"))
+    start = time.time()
+
+    print("Starting WS...")
 
     await auth.connect()
     
@@ -297,11 +306,17 @@ async def on_ready():
         
         debug = False
 
-        while True:
+        while (time.time() - start) < 6300:
             profile = {
                 "linked": []
             }
-            raw_data = await websocket.recv()
+            raw_data = None
+            try:
+                raw_data = await asyncio.wait_for(websocket.recv(), timeout=(6300 - (time.time() - start)))
+            except TimeoutError:
+                print("Login expired, refreshing.")
+                break
+                                              
             if debug:
                 print(f"Received!")
 
@@ -381,5 +396,10 @@ async def on_ready():
             embed.set_thumbnail(url=f"https://ubisoft-avatars.akamaized.net/{profile['profile_id']}/default_tall.png")
             
             await client.get_channel(int(os.environ["CHANNEL_ID"] or os.getenv("CHANNEL_ID"))).send(embed=embed)
+        
+        print("Terminating WS stream...")
+        await websocket.close()
 
+    print("Finalizing auth session, opening new stream shortly...")
+    await auth.close()
 client.run(os.environ["TOKEN"])
